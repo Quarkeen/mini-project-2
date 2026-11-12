@@ -1,0 +1,11 @@
+# AI Vision Lab – Python packages (PC / laptop).
+# Install PyTorch FIRST, matching your GPU, e.g.:
+#   pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+# On the Jetson use setup_jetson.sh instead (NVIDIA's own PyTorch build).
+ultralytics>=8.3
+flask>=3.0
+waitress>=3.0
+psutil>=5.9
+pyyaml>=6.0
+requests>=2.31
+pillow>=10.0

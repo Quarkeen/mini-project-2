@@ -1,0 +1,276 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Vision Lab</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <script src="/static/vendor/chart.umd.min.js"></script>
+</head>
+<body>
+<header>
+  <div class="brand">🤖 <span>AI Vision Lab</span></div>
+  <nav id="tabs">
+    <button data-tab="pictures" class="active">📸 <span>1. Pictures</span></button>
+    <button data-tab="train">🧠 <span>2. Train</span></button>
+    <button data-tab="test">🔍 <span>3. Test</span></button>
+  </nav>
+  <div id="sys" class="sys" title="How hard the computer is working"></div>
+</header>
+
+<main>
+<!-- ═════════════════════════ PICTURES ═════════════════════════ -->
+<section id="tab-pictures" class="tab active">
+  <div class="intro">
+    <h1>Pictures are how an AI learns 👀</h1>
+    <p>To teach an AI to find something, we show it lots of pictures with a <b>box</b> drawn around the object
+      and a <b>label</b> saying what it is. Look through the library, or add your own pictures below!</p>
+  </div>
+
+  <div class="card">
+    <h2>📚 Picture library</h2>
+    <p class="muted">Ready-made pictures that people have already drawn boxes on. Click one to look inside.</p>
+    <div id="lib-classes" class="class-grid"></div>
+    <div id="lib-gallery-wrap" class="hidden">
+      <div class="row between"><h3 id="lib-gallery-title"></h3><button class="ghost" id="lib-close">✖ Close</button></div>
+      <div id="lib-gallery" class="gallery"></div>
+      <div class="center"><button class="ghost" id="lib-more">Show more</button></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>🖼️ My pictures</h2>
+    <p class="muted">Take or upload your own photos, then draw boxes around the objects. Only pictures you mark
+      <b>✅ checked</b> are used for training.</p>
+    <div class="upload-row">
+      <label class="field">What is in these pictures?
+        <input id="up-label" list="label-list" placeholder="e.g. door, chair, bottle">
+      </label>
+      <label class="btn big" for="up-files">📤 Add pictures</label>
+      <input id="up-files" type="file" accept="image/*" multiple hidden>
+      <div id="up-status" class="muted"></div>
+    </div>
+    <div id="dropzone" class="dropzone">…or drop pictures here</div>
+    <div class="row filters" id="mine-filters">
+      <button data-f="unchecked" class="chip active">✏️ Needs boxes</button>
+      <button data-f="checked" class="chip">✅ Checked</button>
+      <button data-f="all" class="chip">All</button>
+      <span id="mine-count" class="muted"></span>
+    </div>
+    <div id="mine-gallery" class="gallery"></div>
+    <div class="center"><button class="ghost" id="mine-more">Show more</button></div>
+  </div>
+  <datalist id="label-list"></datalist>
+</section>
+
+<!-- ═════════════════════════ TRAIN ═════════════════════════ -->
+<section id="tab-train" class="tab">
+  <div class="train-layout">
+    <div class="card setup" id="train-setup">
+      <h2>🧠 Teach your AI</h2>
+
+      <div class="step"><div class="step-n">1</div><div class="step-body">
+        <h3>What should it learn to find?</h3>
+        <div id="tr-classes" class="chip-grid"></div>
+        <p class="hint">Pick 1–5 objects. Fewer objects = faster learning.</p>
+      </div></div>
+
+      <div class="step"><div class="step-n">2</div><div class="step-body">
+        <h3>How many pictures of each?</h3>
+        <div class="slider-row"><input type="range" id="tr-per" min="10" max="300" step="10" value="100"><b id="tr-per-v">100</b></div>
+        <label class="check"><input type="checkbox" id="tr-lib" checked> Use library pictures</label>
+        <label class="check"><input type="checkbox" id="tr-mine" checked> Use my checked pictures</label>
+        <p class="hint" id="tr-pic-hint"></p>
+      </div></div>
+
+      <div class="step"><div class="step-n">3</div><div class="step-body">
+        <h3>Pick a brain</h3>
+        <div id="tr-models" class="model-grid"></div>
+      </div></div>
+
+      <div class="step"><div class="step-n">4</div><div class="step-body">
+        <h3>Training settings</h3>
+        <div class="setting">
+          <div class="row between"><span>🔁 Epochs <i class="q" data-tip="One epoch = the AI looks at every training picture once. More epochs = more practice, but takes longer.">?</i></span><b id="tr-epochs-v">20</b></div>
+          <input type="range" id="tr-epochs" min="1" max="100" value="20">
+        </div>
+        <div class="setting">
+          <div class="row between"><span>🏃 Learning rate <i class="q" data-tip="How big a step the AI takes each time it fixes a mistake. Too small = slow learning. Too big = it overshoots and gets confused.">?</i></span><b id="tr-lr-v">0.01</b></div>
+          <input type="range" id="tr-lr" min="0" max="6" step="1" value="3">
+          <div class="row between tiny muted"><span>careful</span><span>bold</span></div>
+        </div>
+        <div class="setting">
+          <div class="row between"><span>📦 Batch size <i class="q" data-tip="How many pictures the AI studies together before updating its brain. Bigger batches need more memory.">?</i></span><b id="tr-batch-v">8</b></div>
+          <input type="range" id="tr-batch" min="1" max="32" value="8">
+        </div>
+        <div class="setting">
+          <div class="row between"><span>🔎 Picture size <i class="q" data-tip="Pictures are shrunk to this size. Bigger = the AI sees more detail, but learns slower and needs more memory.">?</i></span><b id="tr-imgsz-v">320 px</b></div>
+          <input type="range" id="tr-imgsz" min="0" max="4" step="1" value="0">
+        </div>
+        <label class="check"><input type="checkbox" id="tr-aug" checked> 🤸 Practice tricks
+          <i class="q" data-tip="Shows flipped, zoomed, and recoloured copies of the pictures, so the AI learns the object, not one exact photo.">?</i></label>
+        <label class="check"><input type="checkbox" id="tr-freeze"> 🔒 Keep the eyes (freeze backbone)
+          <i class="q" data-tip="The brain's 'eyes' (backbone) already learned shapes and textures from thousands of photos. Locking them means only the parts that decide what and where things are will learn. Great when you have few pictures (under ~100), and it uses less memory.">?</i></label>
+        <label class="check"><input type="checkbox" id="tr-scratch"> 👶 Start from scratch
+          <i class="q" data-tip="Normally the brain already knows shapes from 80 everyday things (transfer learning). Starting from scratch shows how much harder learning is from nothing!">?</i></label>
+        <details><summary>Advanced</summary>
+          <label class="field">Optimizer
+            <select id="tr-opt"><option value="SGD">SGD (steady)</option><option value="AdamW">AdamW (adaptive)</option></select>
+          </label>
+        </details>
+      </div></div>
+
+      <div class="step"><div class="step-n">5</div><div class="step-body">
+        <h3>Name your AI</h3>
+        <input id="tr-name" placeholder="e.g. Ravi's chair finder" maxlength="60">
+      </div></div>
+
+      <button id="tr-start" class="btn huge">🚀 Start training</button>
+      <p id="tr-err" class="error"></p>
+    </div>
+
+    <div class="live">
+      <div class="card" id="live-card">
+        <div class="row between">
+          <h2 id="live-title">📊 Training dashboard</h2>
+          <div class="row">
+            <button class="danger" id="tr-stop" disabled>⏹ Stop</button>
+          </div>
+        </div>
+        <p id="live-status" class="status-line">Start a training run (or open a past one below) to watch the AI learn.</p>
+        <div class="bars">
+          <div><span class="muted">Epoch</span> <b id="ep-txt">–</b><div class="bar"><div id="ep-bar"></div></div></div>
+          <div><span class="muted">Pictures in this epoch</span> <b id="b-txt">–</b><div class="bar"><div id="b-bar" class="alt"></div></div></div>
+        </div>
+        <div class="stats" id="live-stats"></div>
+
+        <div class="charts">
+          <div class="chart-box">
+            <h4>😵 Mistakes (loss) <i class="q" data-tip="Loss measures how wrong the AI is. It should go DOWN as it learns. 'Practice' is on training pictures, 'Quiz' is on pictures it never trains on.">?</i></h4>
+            <canvas id="ch-loss"></canvas>
+          </div>
+          <div class="chart-box">
+            <h4>🏆 Score <i class="q" data-tip="mAP50: how well boxes match the real objects (1.0 = perfect). Precision: when it says 'chair', how often is it right? Recall: of all the chairs, how many did it find?">?</i></h4>
+            <canvas id="ch-score"></canvas>
+          </div>
+          <div class="chart-box">
+            <h4>🧩 How much the brain changed <i class="q" data-tip="The AI is made of millions of numbers (weights). This shows how much each part changed in each epoch. Big changes early, small changes once it has learned.">?</i></h4>
+            <canvas id="ch-change"></canvas>
+          </div>
+          <div class="chart-box">
+            <h4>🏃 Learning rate <i class="q" data-tip="The step size starts small (warm-up), then slowly gets smaller so the AI can fine-tune at the end.">?</i></h4>
+            <canvas id="ch-lr"></canvas>
+          </div>
+        </div>
+
+        <h4>👀 What the AI sees on quiz pictures</h4>
+        <div class="row"><span class="muted">After epoch</span>
+          <input type="range" id="pv-epoch" min="1" max="1" value="1" disabled><b id="pv-epoch-v">–</b></div>
+        <div id="previews" class="previews"></div>
+        <details><summary>🤓 Nerd log</summary><pre id="train-log"></pre></details>
+      </div>
+
+      <div class="card">
+        <h2>🗂️ Trained AIs</h2>
+        <div id="runs"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═════════════════════════ TEST ═════════════════════════ -->
+<section id="tab-test" class="tab">
+  <div class="card">
+    <h2>🔍 Test an AI</h2>
+    <div class="row wrap">
+      <label class="field grow">Which AI?
+        <select id="ts-model"></select>
+      </label>
+      <label class="field">Confidence <i class="q" data-tip="Only show boxes the AI is at least this sure about.">?</i>
+        <div class="slider-row"><input type="range" id="ts-conf" min="5" max="95" value="35"><b id="ts-conf-v">0.35</b></div>
+      </label>
+    </div>
+    <div class="row filters" id="ts-sources">
+      <button class="chip active" data-src="upload">📁 Picture</button>
+      <button class="chip" data-src="jetson">🎥 Jetson camera</button>
+      <button class="chip" data-src="webcam">📷 Webcam on this browser</button>
+    </div>
+    <div id="ts-upload" class="src-panel">
+      <label class="btn big" for="ts-file">📁 Choose a picture</label>
+      <input id="ts-file" type="file" accept="image/*" hidden>
+    </div>
+    <div id="ts-webcam" class="src-panel hidden">
+      <button class="btn" id="ts-cam-start">▶ Start camera</button>
+      <button class="ghost" id="ts-cam-stop">⏹ Stop</button>
+      <p class="hint">Uses a webcam on the device you are browsing with (a laptop's webcam or a USB camera).
+        Browsers only allow this on <b>localhost</b>. The Jetson's own ribbon camera is <b>not</b> here:
+        use <b>🎥 Jetson camera</b>.</p>
+    </div>
+    <div id="ts-jetson" class="src-panel hidden">
+      <button class="btn" id="ts-jet-start">▶ Start Jetson camera</button>
+      <button class="ghost" id="ts-jet-stop">⏹ Stop</button>
+      <p class="hint">Uses the camera connected to the Jetson. It works from any laptop or tablet that opens this page.</p>
+    </div>
+    <div class="test-view">
+      <div class="stage" id="ts-stage">
+        <img id="ts-img" alt="">
+        <video id="ts-video" playsinline muted class="hidden"></video>
+        <div id="ts-boxes" class="box-layer"></div>
+        <div id="ts-empty" class="empty">Your picture will appear here</div>
+      </div>
+      <div class="result">
+        <div id="ts-say" class="say">🤖 …</div>
+        <div id="ts-list"></div>
+        <div id="ts-speed" class="muted tiny"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+
+<!-- annotation editor -->
+<div id="editor" class="modal hidden">
+  <div class="modal-box editor-box">
+    <div class="row between">
+      <h3 id="ed-title">Draw boxes</h3>
+      <div class="row">
+        <button class="ghost" id="ed-prev">◀</button>
+        <span id="ed-pos" class="muted"></span>
+        <button class="ghost" id="ed-next">▶</button>
+        <button class="ghost" id="ed-close">✖</button>
+      </div>
+    </div>
+    <div class="editor-main">
+      <div class="canvas-wrap"><canvas id="ed-canvas"></canvas></div>
+      <div class="ed-side">
+        <label class="field">Label for new boxes
+          <input id="ed-label" list="label-list">
+        </label>
+        <p class="hint">🖱️ Drag on the picture to draw a box around <b>each</b> object.<br>
+          Click a box to select it. Then drag it to move it, or drag a corner to resize it.</p>
+        <button class="btn" id="ed-suggest">✨ AI helper: find it for me</button>
+        <p id="ed-helper" class="hint"></p>
+        <div id="ed-boxes" class="box-list"></div>
+        <button class="ghost" id="ed-del-box">🗑 Delete selected box</button>
+        <button class="btn big ok" id="ed-save">✅ Looks right! Save</button>
+        <button class="danger small" id="ed-del-pic">Delete this picture</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- library picture viewer -->
+<div id="viewer" class="modal hidden">
+  <div class="modal-box">
+    <div class="row between"><h3 id="vw-title"></h3><button class="ghost" id="vw-close">✖</button></div>
+    <div class="stage"><img id="vw-img" alt=""><div id="vw-boxes" class="box-layer"></div></div>
+  </div>
+</div>
+
+<div id="tip" class="tip hidden"></div>
+<div id="toast" class="toast hidden"></div>
+
+<script type="module" src="/static/js/app.js"></script>
+</body>
+</html>

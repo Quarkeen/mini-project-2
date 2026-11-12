@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+
+# Data: pictures, trained models and runs are large – share them with rsync, not git
+data/*
+!data/README.md
+
+# Car runtime files
+car/captures/
+car/.venv/
+car/.idea/
+
+# Editors / OS
+.idea/
+.vscode/
+.DS_Store
+/submission
+/docs
+/car
